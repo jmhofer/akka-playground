@@ -2,30 +2,22 @@ package de.johoop.akka
 
 import akka.actor._
 import akka.pattern.ask
-import akka.dispatch.{ Await, Future }
-import akka.util.{ Timeout, Duration }
-import akka.util.duration._
+import scala.concurrent.{ Await, Future }
+import akka.util.Timeout
+import scala.concurrent.duration._
 
 object Main extends App {
 
   implicit val timeout = Timeout(5 seconds)
 
-  val system = ActorSystem("Client")
-  val login = system.actorFor("akka://Server@localhost:2554/user/secure")
+  val system = ActorSystem("client")
+  val hello = system actorSelection "akka.tcp://server@localhost:2554/user/hello"
 
   try {
-    val response = login ? Authenticate("user", "password")
-    val (hello, token) = Await.result(response, timeout.duration).asInstanceOf[(ActorRef, String)]
-    hello ! Hello(token)
-    println(hello)
+    val response = hello ? Hello
+    val back = Await.result(response, timeout.duration).asInstanceOf[ClientMessage]
+    println(back)
 
-    // attempt to look up hello directly...
-    val hello2 = system.actorFor("akka://Server@localhost:2554/user/secure/$a")
-    hello2 ! Hello(token)
-    
-    // attempt with invalid token
-    hello2 ! Hello("bla")
-    
   } finally {
     system.shutdown
   }

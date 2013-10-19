@@ -1,8 +1,0 @@
-syntax: regexp
-\.project$
-\.classpath$
-/target/
-^target/
-\.cache$
-\.settings$
-

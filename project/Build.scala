@@ -15,7 +15,7 @@ object AkkaBuild extends Build {
   lazy val commonSettings: Seq[Setting[_]] = Seq(
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     version := "1.0.0",
-    scalaVersion := "2.9.2")
+    scalaVersion := "2.10.3")
 
   lazy val sharedSettings: Seq[Setting[_]] = commonSettings ++ Seq(
     name := "akka-shared")
@@ -23,15 +23,15 @@ object AkkaBuild extends Build {
   lazy val serverSettings: Seq[Setting[_]] = commonSettings ++ AkkaKernelPlugin.distSettings ++ Seq(
     name := "akka-server",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" % "akka-actor" % "2.0.2",
-      "com.typesafe.akka" % "akka-remote" % "2.0.2",
-      "com.typesafe.akka" % "akka-kernel" % "2.0.2"),
+      "com.typesafe.akka" %% "akka-actor" % "2.2.1",
+      "com.typesafe.akka" %% "akka-remote" % "2.2.1",
+      "com.typesafe.akka" %% "akka-kernel" % "2.2.1"),
       dist <<= dist.dependsOn(Keys.`package` in (shared, Compile)))
 
   lazy val clientSettings: Seq[Setting[_]] = commonSettings ++ Seq(
     name := "akka-client",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" % "akka-actor" % "2.0.2",
-      "com.typesafe.akka" % "akka-remote" % "2.0.2"))
+      "com.typesafe.akka" %% "akka-actor" % "2.2.1",
+      "com.typesafe.akka" %% "akka-remote" % "2.2.1"))
 }
 
