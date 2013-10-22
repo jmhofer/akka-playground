@@ -13,9 +13,10 @@ object AkkaBuild extends Build {
   lazy val client = Project(id = "akka-client", base = file("client")) settings(clientSettings: _*) dependsOn(shared)
 
   lazy val commonSettings: Seq[Setting[_]] = Seq(
-    resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+    organization := "de.johoop",
     version := "1.0.0",
-    scalaVersion := "2.10.3")
+    scalaVersion := "2.10.3",
+    scalacOptions ++= Seq("-deprecation", "-language:_"))
 
   lazy val sharedSettings: Seq[Setting[_]] = commonSettings ++ Seq(
     name := "akka-shared")
@@ -32,6 +33,8 @@ object AkkaBuild extends Build {
     name := "akka-client",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-actor" % "2.2.1",
-      "com.typesafe.akka" %% "akka-remote" % "2.2.1"))
+      "com.typesafe.akka" %% "akka-remote" % "2.2.1",
+      "com.netflix.rxjava" % "rxjava-core" % "0.14.5",
+      "com.netflix.rxjava" % "rxjava-scala" % "0.14.5"))
 }
 

@@ -1,24 +1,53 @@
 package de.johoop.akka
 
 import akka.actor._
-import akka.pattern.ask
-import scala.concurrent.{ Await, Future }
-import akka.util.Timeout
-import scala.concurrent.duration._
+import rx.lang.scala._
+
+sealed trait Message
+case class Hello(text: String) extends Message
+
+sealed trait SubUnsub extends Message
+case class Subscribe(onNext: Message => Unit) extends SubUnsub
+case object Unsubscribe extends SubUnsub
 
 object Main extends App {
-
-  implicit val timeout = Timeout(5 seconds)
-
   val system = ActorSystem("client")
-  val hello = system actorSelection "akka.tcp://server@localhost:2554/user/hello"
+  val receiver = system actorOf (Props[ObservableActor], "rcv")
 
-  try {
-    val response = hello ? Hello
-    val back = Await.result(response, timeout.duration).asInstanceOf[ClientMessage]
-    println(back)
+  val subscription =
+    observableFromActor(receiver)
+      .take(3)
+      .subscribe(msg => println(s"received: $msg"))
 
-  } finally {
-    system.shutdown
+  Seq("hello", "world", "again", "not anymore") foreach { msg =>
+    receiver ! Hello(msg)
+  }
+  subscription.unsubscribe
+  system.shutdown
+
+  def observableFromActor(actor: ActorRef): Observable[Message] =
+    Observable { observer =>
+      actor ! Subscribe(observer onNext)
+      new Subscription {
+        override def unsubscribe: Unit = actor ! Unsubscribe
+      }
+    }
+}
+
+class ObservableActor extends Actor with ActorLogging {
+  def receive = {
+    case Subscribe(onNext) =>
+      log debug "subscribe"
+      context become subscribed(onNext)
+  }
+
+  def subscribed(onNext: Message => Unit): Actor.Receive = {
+    case Unsubscribe =>
+      log debug "unsubscribe"
+      context become receive
+
+    case message: Message =>
+      log debug s"incoming: $message"
+      onNext(message)
   }
 }
